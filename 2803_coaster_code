@@ -1,0 +1,25 @@
+%{
+Authors:  
+Creation Date: 
+Inputs:
+Outputs: 
+Purpose: Modeling a pilot simulator
+%}
+clc;
+clear;
+close all;
+%% Universal constants
+m = 400; %kg
+g = 9.81; %m/s^2
+
+%% Equations of motion
+% Constant slope G-force (not complete)
+N_section1 / mg
+
+% Loop G-force
+
+% Zero-G Parabola 
+
+% Banked Turn
+
+% Transitions 
