@@ -8,18 +8,92 @@ Purpose: Modeling a pilot simulator
 clc;
 clear;
 close all;
+%% Legend
+% #0 are required track sections
+% #3 are flat track sections
+% #5 are transitions
+% #7 are flat track sections
+
 %% Universal constants
 m = 400; %kg
 g = 9.81; %m/s^2
 
+%% Variable Design Constants
+% Constant slope - #1 Track piece
+Section10_SlopeAngle = pi/4; %Rad
+Section10_InitialHeight = 125; %m  
+Section10_FinalHeight = 100; %m
+
+% Transition from constant slope to Flat
+Section15_TransitionRadius = 31.8; %m
+Section15_TransitionAngle = N/A; %Rad , make this iterate from the starting angle to the ending angle
+Section15_InitialHeight = Section10_FinalHeight; %m
+Section15_FinalHeight = 82.3; %m
+
+% Loop - #2 Track piece
+%Fill in later
+Section20_LoopRadius = N/A; %m , make this iterate from the starting angle to the ending angle
+Section20_LoopAngle = N/A; %m
+
+% Transition from Flat track to Zero_g parabola
+Section25_TransitionAngle = N/A; % Rad , make this iterate from the starting angle to the ending angle
+Section25_TransitionRadius = N/A; % m
+
+% Transition from Zero_g parabola to idk
+Section35_TransitionAngle = N/A; % Rad , make this iterate from the starting angle to the ending angle
+Section35_TransitionRadius = N/A; %m
+
+
+
+
+
+
 %% Equations of motion
-% Constant slope G-force (not complete)
-N_section1 / mg
+% Constant slope G-force
+Section10_Gforce = cos(Section10_SlopeAngle);
+% Constant slope Exit Velocity
+Section10_Velocity = sqrt(2*g*(Section10_InitialHeight - Section10_FinalHeight));
+
+% Transition from constant slope to Flat - G Force
+Section15_Gforce = (Section10_Velocity^2 / (g * Section15_TransitionRadius)) - sin(Section15_TransitionAngle);
+% Transition from constant slope to Flat - Exit Velocity
+Section15_Velocity = sqrt(2*g*(Section15_InitialHeight - Section15_FinalHeight));
+
+% Flat track from Transition to Loop - G Force
+Section17_Gforce = 1;
+% Flat track from Transition to Loop - Exit Velocity
+Section17_Velocity = Section15_Velocity;
 
 % Loop G-force
+Section20_Gforce = (Section17_Velocity^2 / (g * Section20_LoopRadius)) - sin(Section20_LoopAngle);
+% Loop Exit Velocity
+Section20_Velocity = Section17_Velocity;
 
-% Zero-G Parabola 
+% Flat track from Loop to Transition - G Force
+Section23_Gforce = 1;
+% Flat track from Loop to Transition - Exit Velocity
+Section23_Velocity = Section20_Velocity;
+
+% Transition from flat track to Zero-G parabola - G Force
+Section25_Gforce = (Section23_Velocity^2 / (g * Section25_TransitionRadius)) - sin(Section25_TransitionAngle);
+% Transition from flat track to Zero-G parabola - Exit Velocity
+Section25_Velocity = Section23_Velocity; 
+
+% Zero-G parabola - G Force
+Section30_Gforce = 0;
+% Zero-G parabola - Exit Velocity
+Section30_Velocity = Section25_Velocity;
+
+
+% Transition from Zero-G parabola to idk - G Force
+Section35_Gforce = (Section30_Velocity^2 / (g * Section35_TransitionRadius)) - sin(Section35_TransitionAngle);
+% Transition from Zero-G parabola to idk - Exit Velocity
+Section25_Velocity = ; % incomplete, is it going to flat or constant slope track?
+
+
 
 % Banked Turn
+
+% Transitions 
 
 % Transitions 
