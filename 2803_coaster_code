@@ -26,22 +26,59 @@ Section10_FinalHeight = 100; %m
 
 % Transition from constant slope to Flat
 Section15_TransitionRadius = 31.8; %m
-Section15_TransitionAngle = N/A; %Rad , make this iterate from the starting angle to the ending angle
+Section15_TransitionArcLengthPlot = linspace(35.4,60.4);
+Section15_TransitionArcLength = linspace(0,25);
+Section15_TransitionAngle = Section15_TransitionArcLength ./Section15_TransitionRadius; %Rad , make this iterate from the starting angle to the ending angle
 Section15_InitialHeight = Section10_FinalHeight; %m
 Section15_FinalHeight = 82.3; %m
 
+% Flat section
+Section17_ArclengthPlot = linspace(60.4,100);
+
 % Loop - #2 Track piece
-%Fill in later
-Section20_LoopRadius = N/A; %m , make this iterate from the starting angle to the ending angle
-Section20_LoopAngle = N/A; %m
+Section20_LoopRadius = 50; %m , make this iterate from the starting angle to the ending angle
+Section20_LoopArcLengthPlot = linspace(100,414.16);
+Section20_LoopArcLength = linspace(0,314.16);
+Section20_LoopAngle = Section20_LoopArcLength ./Section20_LoopRadius; %m
+
+% Flat Track
+Section23_ArclengthPlot = linspace(414.16,515.16);
+
 
 % Transition from Flat track to Zero_g parabola
-Section25_TransitionAngle = N/A; % Rad , make this iterate from the starting angle to the ending angle
-Section25_TransitionRadius = N/A; % m
+Section25_TransitionArcLengthPlot = linspace(515.16, 565.16);
+Section25_TransitionArcLength = linspace(0,50);
+Section25_TransitionRadius = 63.7; % m
+Section25_TransitionAngle = Section25_TransitionArcLength ./ Section25_TransitionRadius ;
 
-% Transition from Zero_g parabola to idk
-Section35_TransitionAngle = N/A; % Rad , make this iterate from the starting angle to the ending angle
-Section35_TransitionRadius = N/A; %m
+% ZeroG Parabola - #3 Track piece
+Section30_ZeroGParabolaArclengthPlot = linspace(565.16 , 665.16); % Maybe check this later
+
+% Transition from Zero_g parabola to Flat
+Section35_TransitionArcLengthPlot = linspace(665.16, 725.16);
+Section35_TransitionArcLength = linspace(0, 60);
+Section35_TransitionRadius = 63.7; %m
+Section35_TransitionAngle = Section35_TransitionArcLength ./ Section35_TransitionRadius;
+
+% Flat track
+Section37_ArclengthPlot = linspace(725.16, 775.16);
+
+% Transition from Flat to slope
+Section45_TransitionRadius = 19.1;
+Section45_ArclengthPlot = linspace(775.16,800.16);
+Section45_Arclength = linspace(0,25);
+Section45_TransitionAngle = Section45_Arclength ./ Section45_TransitionRadius;
+Section45_FinalHeight = 71.7;
+
+% Constant Slope 
+Section50_SlopeAngle = pi/4;
+Section50_ArclengthPlot = linspace(800.16,850.16);
+Section50_FinalHeight = 36.4;
+
+
+
+
+
 
 
 
@@ -57,7 +94,7 @@ Section10_Velocity = sqrt(2*g*(Section10_InitialHeight - Section10_FinalHeight))
 % Transition from constant slope to Flat - G Force
 Section15_Gforce = (Section10_Velocity^2 / (g * Section15_TransitionRadius)) - sin(Section15_TransitionAngle);
 % Transition from constant slope to Flat - Exit Velocity
-Section15_Velocity = sqrt(2*g*(Section15_InitialHeight - Section15_FinalHeight));
+Section15_Velocity = sqrt(2*g*(Section10_InitialHeight - Section15_FinalHeight));
 
 % Flat track from Transition to Loop - G Force
 Section17_Gforce = 1;
@@ -84,16 +121,73 @@ Section30_Gforce = 0;
 % Zero-G parabola - Exit Velocity
 Section30_Velocity = Section25_Velocity;
 
-
-% Transition from Zero-G parabola to idk - G Force
+% Transition from Zero-G parabola to Flat - G Force
 Section35_Gforce = (Section30_Velocity^2 / (g * Section35_TransitionRadius)) - sin(Section35_TransitionAngle);
-% Transition from Zero-G parabola to idk - Exit Velocity
-Section25_Velocity = ; % incomplete, is it going to flat or constant slope track?
+% Transition from Zero-G parabola to Flat - Exit Velocity
+Section35_Velocity = Section30_Velocity; 
 
+% Flat track - G Force
+Section37_Gforce = 1;
+Section37_Velocity = Section35_Gforce;
 
+% Transition from flat to slope - G force
+Section45_Gforce = (Section35_Velocity^2 / (g * Section45_TransitionRadius)) - sin(Section45_TransitionAngle);
+Section45_Velocity = sqrt(2*g*(Section10_InitialHeight - Section45_FinalHeight));
 
-% Banked Turn
+% Constant slope - G Force
+Section50_Gforce = cos(Section50_SlopeAngle);
+Section50_Velocity = sqrt(2*g*(Section10_InitialHeight - Section50_FinalHeight));
 
-% Transitions 
+% Transition
 
-% Transitions 
+% Flat
+
+% Transition into banked turn
+
+% Banked turn
+
+% Transition out of banked turn
+
+% breaking section
+
+%% Plotting
+plot(y);
+
+x = linspace(0,850.16,10000);
+% Need to make the sizes of this index function and the arclengths the same
+function y = piecewise_func(x, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius )
+    % Preallocate output array
+    y = zeros(size(x)); 
+
+    % Define conditions a <= x < b
+    idx1 = (0 <= x) & (x < 35.4);
+    idx2 = (35.4  <= x) & (x < 60.4);
+    idx3 = (60.4  <= x) & (x < 100);
+    idx4 = (100  <= x) & (x < 414.16);
+    idx5 = (414.16  <= x) & (x <  515.16);
+    idx6 = (515.16  <= x) & (x <  565.16);
+    idx7 = (565.16  <= x) & (x <  665.16);
+    idx8 = (665.16  <= x) & (x <  725.16);
+    idx9 = (725.16  <= x) & (x <  775.16);
+    idx10 = (775.16  <= x) & (x < 800.16);
+    idx11 = (800.16 <= x) & (x < 850.16);
+
+    % Assign values based on conditions
+    y(idx1)  = cos(Section10_SlopeAngle);  % Constant Slope
+    y(idx2)  = (Section10_Velocity^2 / (g * Section15_TransitionRadius)) ...
+        - sin(Section15_TransitionArcLength ./Section15_TransitionRadius); % Transition
+    y(idx3)  = 1;       % Flat track
+    y(idx4)  = (Section17_Velocity^2 / (g * Section20_LoopRadius)) ...
+        - sin(Section20_LoopArcLength ./Section20_LoopRadius);  % Loop
+    y(idx5)  = 1;       % Flat track
+    y(idx6)  = (Section23_Velocity^2 / (g * Section25_TransitionRadius)) ...
+        - sin(Section25_TransitionArcLength ./ Section25_TransitionRadius); % Transition
+    y(idx7)  = 0;       % Zero G parabola
+    y(idx8)  = (Section30_Velocity^2 / (g * Section35_TransitionRadius)) ...
+        - sin(Section35_TransitionArcLength ./ Section35_TransitionRadius); % Transition
+    y(idx9)  = 1;      % Flat track
+    y(idx10) = (Section35_Velocity^2 / (g * Section45_TransitionRadius)) ...
+        - sin(Section45_Arclength ./ Section45_TransitionRadius);  % Transition
+    y(idx11) = cos(Section50_SlopeAngle); % Constant Slope
+
+end
