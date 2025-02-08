@@ -1,0 +1,76 @@
+% Need to make the sizes of this index function and the arclengths the same
+function y = Piecewise_function(x,g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle)
+
+    % Resizing variables
+    [Section10_SlopeAngle, Section10_Velocity, Section15_TransitionRadius, Section15_TransitionArcLength, ...
+    Section17_Velocity, Section20_LoopRadius, Section20_LoopArcLength, Section23_Velocity, ...
+    Section25_TransitionRadius, Section25_TransitionArcLength, Section30_Velocity, ...
+    Section35_TransitionRadius, Section35_TransitionArcLength, Section35_Velocity, ...
+    Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle] = Resize_variables(x, ...
+    Section10_SlopeAngle, Section10_Velocity, Section15_TransitionRadius, Section15_TransitionArcLength, ...
+    Section17_Velocity, Section20_LoopRadius, Section20_LoopArcLength, Section23_Velocity, ...
+    Section25_TransitionRadius, Section25_TransitionArcLength, Section30_Velocity, ...
+    Section35_TransitionRadius, Section35_TransitionArcLength, Section35_Velocity, ...
+    Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle);
+
+
+    % Preallocate output array
+    y = zeros(size(x)); 
+
+    % Define conditions a <= x < b
+    idx1 = (0 <= x) & (x < 35.4);
+    idx2 = (35.4  <= x) & (x < 60.4);
+    idx3 = (60.4  <= x) & (x < 100);
+    idx4 = (100  <= x) & (x < 414.16);
+    idx5 = (414.16  <= x) & (x <  515.16);
+    idx6 = (515.16  <= x) & (x <  565.16);
+    idx7 = (565.16  <= x) & (x <  665.16);
+    idx8 = (665.16  <= x) & (x <  725.16);
+    idx9 = (725.16  <= x) & (x <  775.16);
+    idx10 = (775.16  <= x) & (x < 800.16);
+    idx11 = (800.16 <= x) & (x < 850.16);
+
+    % Assign values based on conditions
+    % Section 1: Constant Slope (using scalar Section10_SlopeAngle)
+    y(idx1)  = cos(Section10_SlopeAngle(idx1));
+
+    % Section 2: Transition from constant slope to flat
+    y(idx2)  = (Section10_Velocity(idx2).^2 ./ (g .* Section15_TransitionRadius(idx2))) ...
+                - sin(Section15_TransitionArcLength(idx2) ./ Section15_TransitionRadius(idx2));
+
+    % Section 3: Flat track
+    y(idx3)  = ones(size(x(idx3)));
+
+    % Section 4: Loop
+    y(idx4)  = (Section17_Velocity(idx4).^2 ./ (g .* Section20_LoopRadius(idx4))) ...
+                - sin(Section20_LoopArcLength(idx4) ./ Section20_LoopRadius(idx4));
+
+    % Section 5: Flat track
+    y(idx5)  = ones(size(x(idx5)));
+
+    % Section 6: Transition from flat track to Zero-G parabola
+    y(idx6)  = (Section23_Velocity(idx6).^2 ./ (g .* Section25_TransitionRadius(idx6))) ...
+                - sin(Section25_TransitionArcLength(idx6) ./ Section25_TransitionRadius(idx6));
+
+    % Section 7: Zero G parabola
+    y(idx7)  = zeros(size(x(idx7)));
+
+    % Section 8: Transition from Zero-G parabola to flat
+    y(idx8)  = (Section30_Velocity(idx8).^2 ./ (g .* Section35_TransitionRadius(idx8))) ...
+                - sin(Section35_TransitionArcLength(idx8) ./ Section35_TransitionRadius(idx8));
+
+    % Section 9: Flat track
+    y(idx9)  = ones(size(x(idx9)));
+
+    % Section 10: Transition from flat to slope
+    y(idx10) = (Section35_Velocity(idx10).^2 ./ (g .* Section45_TransitionRadius(idx10))) ...
+                - sin(Section45_Arclength(idx10) ./ Section45_TransitionRadius(idx10));
+
+    % Section 11: Constant Slope (using scalar Section50_SlopeAngle)
+    y(idx11) = cos(Section50_SlopeAngle(idx11));
+
+end
