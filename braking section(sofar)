@@ -2,16 +2,16 @@
 % add to main
 
 Sectionxx_ArclengthPlot = linspace(start, 1250); % Define track range
-Section55_Distance = end - start; % Braking distance
+Sectionxx_Distance = end - start; % Braking distance
 
 % Initial velocity at braking start
 Sectionxx_InitialVelocity = Sectionbefore_Velocity; % section before velocity=inital velocity
 
 % find deceleration
-Section55_RequiredDeceleration = - (Sectionxx_InitialVelocity^2) / (2 * Sectionxx_Distance);
+Sectionxx_RequiredDeceleration = - (Sectionxx_InitialVelocity^2) / (2 * Sectionxx_Distance);
 
 % does not exceed 4G
-Section55_Deceleration = max(Sectionxx_RequiredDeceleration, -4*g); 
+Sectionxx_Deceleration = max(Sectionxx_RequiredDeceleration, -4*g); 
 
 % Compute braking G-force
-Section55_Gforce = abs(Sectionxx_Deceleration / g);
+Sectionxx_Gforce = abs(Sectionxx_Deceleration / g);
