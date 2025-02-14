@@ -22,17 +22,21 @@ function y = Piecewise_function(x,g, Section10_SlopeAngle, Section10_Velocity,Se
     y = zeros(size(x)); 
 
     % Define conditions a <= x < b
-    idx1 = (0 <= x) & (x < 35.4);
-    idx2 = (35.4  <= x) & (x < 60.4);
-    idx3 = (60.4  <= x) & (x < 100);
-    idx4 = (100  <= x) & (x < 414.16);
-    idx5 = (414.16  <= x) & (x <  515.16);
-    idx6 = (515.16  <= x) & (x <  565.16);
-    idx7 = (565.16  <= x) & (x <  665.16);
-    idx8 = (665.16  <= x) & (x <  725.16);
-    idx9 = (725.16  <= x) & (x <  775.16);
-    idx10 = (775.16  <= x) & (x < 800.16);
-    idx11 = (800.16 <= x) & (x < 850.16);
+    idx1  = (0       <= x) & (x < 35.4);    % Constant Slope (35.4 m)
+    idx2  = (35.4    <= x) & (x < 60.4);    % Transition (25 m)
+    idx3  = (60.4    <= x) & (x < 65.4);    % Flat track (5 m)
+    idx4  = (65.4    <= x) & (x < 379.56);  % Loop (314.16 m)
+    idx5  = (379.56  <= x) & (x < 384.56);  % Flat track (5 m)
+    idx6  = (384.56  <= x) & (x < 434.56);  % Transition (50 m)
+    idx7  = (434.56  <= x) & (x < 534.56);  % Zero G parabola (100 m)
+    idx8  = (534.56  <= x) & (x < 594.56);  % Transition (60 m)
+    idx9  = (594.56  <= x) & (x < 599.56);  % Flat track (5 m)
+    idx10 = (599.56  <= x) & (x < 624.56);  % Transition (25 m)
+    idx11 = (624.56  <= x) & (x < 674.56);  % Constant Slope (50 m)
+    idx12 = (674.56  <= x) & (x < 709.56);  % Transition (35 m)
+    idx13 = (709.56  <= x) & (x < 1009.56); % Banked Turn (300 m)
+    idx14 = (1009.56  <= x) & (x < 1249);   % Braking Section (239.44 m)
+
 
     % Assign values based on conditions
     % Section 1: Constant Slope (using scalar Section10_SlopeAngle)
@@ -72,5 +76,16 @@ function y = Piecewise_function(x,g, Section10_SlopeAngle, Section10_Velocity,Se
 
     % Section 11: Constant Slope (using scalar Section50_SlopeAngle)
     y(idx11) = cos(Section50_SlopeAngle(idx11));
+
+    % Section 12: Transition (35 m) 
+    y(idx12) = (Section50_Velocity.^2 ./ (g .* Section55_TransitionRadius)) - sin(Section55_TransitionAngle); 
+
+    % Section 13: Banked Turn (300 m) 
+    y(idx13) = 1 / cos(atan(Section55_Velocity^2 / g * Section60_Radius)); 
+
+    % Section 14: Braking Section (239.44 m) 
+    y(idx14) = abs((max((-(Section70_InitialVelocity^2) / (2 * Section70_Distance)), -4*g)) / g); 
+
+    
 
 end
