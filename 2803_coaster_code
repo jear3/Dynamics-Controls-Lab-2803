@@ -75,7 +75,17 @@ Section50_SlopeAngle = pi/4;
 Section50_ArclengthPlot = linspace(800.16,850.16);
 Section50_FinalHeight = 36.4;
 
+% Transition from Slope to Bank
+Section55_TransitionRadius = 44.56;
+Section55_ArclengthPlot = linspace(850.16,885.16);
+Section55_Arclength = linspace(0,35);
+Section55_TransitionAngle = Section55_Arclength ./ Section55_TransitionRadius;
+Section55_FinalHeight = 71.7;
 
+% Banked turn
+Section60_Radius = 95.49;
+Section60_Arclength = linspace(0,300);
+Section60_ArclengthPlot = linspace(885.16,1185.16);
 
 
 
@@ -139,14 +149,12 @@ Section50_Gforce = cos(Section50_SlopeAngle);
 Section50_Velocity = sqrt(2*g*(Section10_InitialHeight - Section50_FinalHeight));
 
 % Transition
-
-% Flat
-
-% Transition into banked turn
+Section55_Gforce = (Section50_Velocity^2 / (g * Section55_TransitionRadius)) - sin(Section55_TransitionAngle);
+Section55_Velocity = sqrt(2*g*(Section10_InitialHeight - Section55_FinalHeight));
 
 % Banked turn
-
-% Transition out of banked turn
+Section60_Gforce = 1 / cos(atan(Section55_Velocity^2 / g * Section60_Radius));
+Section60_Velocity = Section55_Velocity;
 
 % breaking section
 %Sectionxx_Gforce
@@ -154,12 +162,19 @@ Section50_Velocity = sqrt(2*g*(Section10_InitialHeight - Section50_FinalHeight))
 
 
 % G-force piece wise function
-x = 0:850.16;
+x = linspace(0,850.16,30000);
 y = Piecewise_function(x, g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
     Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
     Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
     Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
     Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle);
+
+plot(x, y, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt normal to the pilots seat');
+grid on;
+
 
 plot(x, y, 'b-', 'LineWidth', 2); % Blue line with thickness 2
 xlabel('Position on coaster (m)'); % Replace with actual label
