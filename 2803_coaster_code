@@ -74,8 +74,8 @@ Section55_TransitionAngle = Section55_Arclength ./ Section55_TransitionRadius;
 Section55_FinalHeight = 71.7;
 
 % Banked turn
-Section60_Radius = 95.49;
-Section60_Arclength = linspace(0,300);
+Section60_Radius = 159.16;
+Section60_Arclength = linspace(0,500);
 
 
 
@@ -144,13 +144,13 @@ Section55_Gforce = (Section50_Velocity^2 / (g * Section55_TransitionRadius)) - s
 Section55_Velocity = sqrt(2*g*(Section10_InitialHeight - Section55_FinalHeight));
 
 % Banked turn
-Section60_Gforce = 1 / cos(atan(Section55_Velocity^2 / g * Section60_Radius));
+Section60_Gforce = 1 / cos(atan2d(Section55_Velocity^2, g * Section60_Radius));
 Section60_Velocity = Section55_Velocity;
 
 % Braking Section
 
 Section70_ArclengthPlot = linspace(1009.56, 1249); % Define track range
-Section70_Distance = 239.44; % Braking distance
+Section70_Distance = 39.44; % Braking distance
 
 % Initial velocity at braking start
 Section70_InitialVelocity = Section60_Velocity; % section before velocity=inital velocity
@@ -165,15 +165,59 @@ Section70_InitialVelocity = Section60_Velocity; % section before velocity=inital
 Section70_Gforce = abs((max((-(Section70_InitialVelocity^2) / (2 * Section70_Distance)), -4*g)) / g);
 
 % G-force piece wise function
-x = linspace(0,1249,30000);
-y = Piecewise_function(x, g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+x_normal = linspace(0, 1249,3000);
+y_normal = Piecewise_function(x_normal ,g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
     Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
     Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
     Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
-    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle);
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance);
 
-plot(x, y, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+% Normal G force plot
+figure;
+plot(x_normal, y_normal, 'b-', 'LineWidth', 2); % Blue line with thickness 2
 xlabel('Position on coaster (m)'); % Replace with actual label
 ylabel('G-force'); % Replace with actual label
 title('G-force felt normal to the pilots seat');
 grid on;
+
+x_lateral = linspace(0,1249);
+y_lateral = zeros(size(x_lateral));
+
+% Lateral G force plot
+figure;
+plot(x_lateral, y_lateral, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt Laterally');
+grid on;
+
+x_BackandForth = linspace(0,1249);
+y_BackandForth = BackandForth_PieceWiseFunction(x_BackandForth, g, Section70_InitialVelocity, Section70_Distance);
+
+% Back and forth G force plot
+figure;
+plot(x_BackandForth, y_BackandForth, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt in the Back and forth Direction');
+grid on;
+
+%% Loop Plot
+x_loop = linspace(65.4,379.56);
+y_loop = Piecewise_function(x_loop ,g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance);
+
+figure;
+plot(x_BackandForth, y_BackandForth, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt in the Back and forth Direction');
+grid on;
+
