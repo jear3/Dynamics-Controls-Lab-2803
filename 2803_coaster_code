@@ -26,58 +26,49 @@ Section10_FinalHeight = 100; %m
 
 % Transition from constant slope to Flat
 Section15_TransitionRadius = 31.8; %m
-Section15_TransitionArcLengthPlot = linspace(35.4,60.4);
 Section15_TransitionArcLength = linspace(0,25);
 Section15_TransitionAngle = Section15_TransitionArcLength ./Section15_TransitionRadius; %Rad , make this iterate from the starting angle to the ending angle
 Section15_InitialHeight = Section10_FinalHeight; %m
 Section15_FinalHeight = 82.3; %m
 
 % Flat section
-Section17_ArclengthPlot = linspace(60.4,100);
 
 % Loop - #2 Track piece
 Section20_LoopRadius = 50; %m , make this iterate from the starting angle to the ending angle
-Section20_LoopArcLengthPlot = linspace(100,414.16);
 Section20_LoopArcLength = linspace(0,314.16);
 Section20_LoopAngle = Section20_LoopArcLength ./Section20_LoopRadius; %m
 
 % Flat Track
-Section23_ArclengthPlot = linspace(414.16,515.16);
 
 
 % Transition from Flat track to Zero_g parabola
-Section25_TransitionArcLengthPlot = linspace(515.16, 565.16);
 Section25_TransitionArcLength = linspace(0,50);
 Section25_TransitionRadius = 63.7; % m
 Section25_TransitionAngle = Section25_TransitionArcLength ./ Section25_TransitionRadius ;
 
 % ZeroG Parabola - #3 Track piece
-Section30_ZeroGParabolaArclengthPlot = linspace(565.16 , 665.16); % Maybe check this later
+ % Maybe check this later
 
 % Transition from Zero_g parabola to Flat
-Section35_TransitionArcLengthPlot = linspace(665.16, 725.16);
 Section35_TransitionArcLength = linspace(0, 60);
 Section35_TransitionRadius = 63.7; %m
 Section35_TransitionAngle = Section35_TransitionArcLength ./ Section35_TransitionRadius;
 
 % Flat track
-Section37_ArclengthPlot = linspace(725.16, 775.16);
+
 
 % Transition from Flat to slope
 Section45_TransitionRadius = 19.1;
-Section45_ArclengthPlot = linspace(775.16,800.16);
 Section45_Arclength = linspace(0,25);
 Section45_TransitionAngle = Section45_Arclength ./ Section45_TransitionRadius;
 Section45_FinalHeight = 71.7;
 
 % Constant Slope 
 Section50_SlopeAngle = pi/4;
-Section50_ArclengthPlot = linspace(800.16,850.16);
 Section50_FinalHeight = 36.4;
 
 % Transition from Slope to Bank
 Section55_TransitionRadius = 44.56;
-Section55_ArclengthPlot = linspace(850.16,885.16);
 Section55_Arclength = linspace(0,35);
 Section55_TransitionAngle = Section55_Arclength ./ Section55_TransitionRadius;
 Section55_FinalHeight = 71.7;
@@ -85,7 +76,7 @@ Section55_FinalHeight = 71.7;
 % Banked turn
 Section60_Radius = 95.49;
 Section60_Arclength = linspace(0,300);
-Section60_ArclengthPlot = linspace(885.16,1185.16);
+
 
 
 
@@ -156,13 +147,25 @@ Section55_Velocity = sqrt(2*g*(Section10_InitialHeight - Section55_FinalHeight))
 Section60_Gforce = 1 / cos(atan(Section55_Velocity^2 / g * Section60_Radius));
 Section60_Velocity = Section55_Velocity;
 
-% breaking section
-%Sectionxx_Gforce
+% Braking Section
 
+Section70_ArclengthPlot = linspace(1009.56, 1249); % Define track range
+Section70_Distance = 239.44; % Braking distance
 
+% Initial velocity at braking start
+Section70_InitialVelocity = Section60_Velocity; % section before velocity=inital velocity
+
+% find deceleration
+%Section70_RequiredDeceleration = - (Section70_InitialVelocity^2) / (2 * Section70_Distance);
+
+% does not exceed 4G
+%Section70_Deceleration = max((-(Section70_InitialVelocity^2) / (2 * Section70_Distance)), -4*g); 
+
+% Compute braking G-force
+Section70_Gforce = abs((max((-(Section70_InitialVelocity^2) / (2 * Section70_Distance)), -4*g)) / g);
 
 % G-force piece wise function
-x = linspace(0,850.16,30000);
+x = linspace(0,1249,30000);
 y = Piecewise_function(x, g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
     Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
     Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
@@ -174,4 +177,3 @@ xlabel('Position on coaster (m)'); % Replace with actual label
 ylabel('G-force'); % Replace with actual label
 title('G-force felt normal to the pilots seat');
 grid on;
-
