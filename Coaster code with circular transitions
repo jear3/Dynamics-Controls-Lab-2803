@@ -1,0 +1,436 @@
+%{
+Authors:  
+Creation Date: 
+Inputs:
+Outputs: 
+Purpose: Modeling a pilot simulator
+%}
+clc;
+clear;
+close all;
+%% Legend
+% #0 are required track sections
+% #3 are flat track sections
+% #5 are transitions
+% #7 are flat track sections
+
+%% Universal constants
+m = 400; %kg
+g = 9.81; %m/s^2
+
+%% Variable Design Constants
+% Constant slope - #1 Track piece
+Section10_SlopeAngle = pi/4; %Rad
+Section10_InitialHeight = 125; %m  
+Section10_FinalHeight = 124; %m
+
+% Transition from constant slope to Flat
+Section15_TransitionArcLength = linspace(0,25);
+% Section15_TransitionRadius = 31.8;
+Section15_TransitionRadius = (((4 .* Section15_TransitionArcLength.^2) - ...
+    (4 .* Section15_TransitionArcLength) + 2).^(3/2)) / 2; %m
+Section15_InitialHeight = Section10_FinalHeight; %m
+Section15_FinalHeight = 82.3; %m
+
+% Flat section
+
+% Loop - #2 Track piece
+Section20_LoopRadius = 50; %m , make this iterate from the starting angle to the ending angle
+Section20_LoopArcLength = linspace(0,314.16);
+Section20_LoopAngle = Section20_LoopArcLength ./Section20_LoopRadius; %m
+
+% Flat Track
+
+
+% Transition from Flat track to Zero_g parabola
+Section25_TransitionArcLength = linspace(0,50);
+Section25_TransitionRadius = 63.7; % m
+Section25_TransitionAngle = Section25_TransitionArcLength ./ Section25_TransitionRadius ;
+
+% ZeroG Parabola - #3 Track piece
+ % Maybe check this later
+
+% Transition from Zero_g parabola to Flat
+Section35_TransitionArcLength = linspace(0, 60);
+Section35_TransitionRadius = 63.7; %m
+Section35_TransitionAngle = Section35_TransitionArcLength ./ Section35_TransitionRadius;
+
+% Flat track
+
+
+% Transition from Flat to slope
+Section45_TransitionRadius = 19.1;
+Section45_Arclength = linspace(0,25);
+Section45_TransitionAngle = Section45_Arclength ./ Section45_TransitionRadius;
+Section45_FinalHeight = 71.7;
+
+% Constant Slope 
+Section50_SlopeAngle = pi/4;
+Section50_FinalHeight = 36.4;
+
+% Transition from Slope to Bank
+Section55_TransitionRadius = 44.56;
+Section55_Arclength = linspace(0,35);
+Section55_TransitionAngle = Section55_Arclength ./ Section55_TransitionRadius;
+Section55_FinalHeight = 71.7;
+
+% Banked turn
+Section60_Radius = 159.16;
+Section60_Arclength = linspace(0,500);
+
+
+
+
+
+
+
+
+
+
+%% Equations of motion
+% Constant slope G-force
+Section10_Gforce = cos(Section10_SlopeAngle);
+% Constant slope Exit Velocity
+Section10_Velocity = sqrt(2*g*(Section10_InitialHeight - Section10_FinalHeight));
+
+% Transition from constant slope to Flat - G Force
+Section15_Gforce = -(Section10_Velocity.^2 ./ (g .* Section15_TransitionRadius)) ...
+    + sin(log(((4 .* Section15_TransitionArcLength.^2) - (4 .* Section15_TransitionArcLength) + 2).^(3/2) / (2 * 2^(1/2))));
+% Transition from constant slope to Flat - Exit Velocity
+Section15_Velocity = sqrt(2*g*(Section10_InitialHeight - Section15_FinalHeight));
+
+% Flat track from Transition to Loop - G Force
+Section17_Gforce = 1;
+% Flat track from Transition to Loop - Exit Velocity
+Section17_Velocity = Section15_Velocity;
+
+% Loop G-force
+Section20_Gforce = (Section17_Velocity^2 / (g * Section20_LoopRadius)) - sin(Section20_LoopAngle);
+% Loop Exit Velocity
+Section20_Velocity = Section17_Velocity;
+
+% Flat track from Loop to Transition - G Force
+Section23_Gforce = 1;
+% Flat track from Loop to Transition - Exit Velocity
+Section23_Velocity = Section20_Velocity;
+
+% Transition from flat track to Zero-G parabola - G Force
+Section25_Gforce = (Section23_Velocity^2 / (g * Section25_TransitionRadius)) - sin(Section25_TransitionAngle);
+% Transition from flat track to Zero-G parabola - Exit Velocity
+Section25_Velocity = Section23_Velocity; 
+
+% Zero-G parabola - G Force
+Section30_Gforce = 0;
+% Zero-G parabola - Exit Velocity
+Section30_Velocity = Section25_Velocity;
+
+% Transition from Zero-G parabola to Flat - G Force
+Section35_Gforce = (Section30_Velocity^2 / (g * Section35_TransitionRadius)) - sin(Section35_TransitionAngle);
+% Transition from Zero-G parabola to Flat - Exit Velocity
+Section35_Velocity = Section30_Velocity; 
+
+% Flat track - G Force
+Section37_Gforce = 1;
+Section37_Velocity = Section35_Gforce;
+
+% Transition from flat to slope - G force
+Section45_Gforce = (Section35_Velocity^2 / (g * Section45_TransitionRadius)) - sin(Section45_TransitionAngle);
+Section45_Velocity = sqrt(2*g*(Section10_InitialHeight - Section45_FinalHeight));
+
+% Constant slope - G Force
+Section50_Gforce = cos(Section50_SlopeAngle);
+Section50_Velocity = sqrt(2*g*(Section10_InitialHeight - Section50_FinalHeight));
+
+% Transition
+Section55_Gforce = (Section50_Velocity^2 / (g * Section55_TransitionRadius)) - sin(Section55_TransitionAngle);
+Section55_Velocity = sqrt(2*g*(Section10_InitialHeight - Section55_FinalHeight));
+
+% Banked turn
+Section60_Gforce = 1 / cos(atan2d(Section55_Velocity^2, g * Section60_Radius));
+Section60_Velocity = Section55_Velocity;
+
+% Braking Section
+
+Section70_ArclengthPlot = linspace(1009.56, 1249); % Define track range
+Section70_Distance = 39.44; % Braking distance
+
+% Initial velocity at braking start
+Section70_InitialVelocity = Section60_Velocity; % section before velocity=inital velocity
+
+% find deceleration
+%Section70_RequiredDeceleration = - (Section70_InitialVelocity^2) / (2 * Section70_Distance);
+
+% does not exceed 4G
+%Section70_Deceleration = max((-(Section70_InitialVelocity^2) / (2 * Section70_Distance)), -4*g); 
+
+% Compute braking G-force
+Section70_Gforce = abs((max((-(Section70_InitialVelocity^2) / (2 * Section70_Distance)), -4*g)) / g);
+
+% G-force piece wise function
+x_normal = linspace(0, 1249,3000);
+y_normal = Piecewise_function(x_normal ,g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance);
+
+% Normal G force plot
+figure;
+plot(x_normal, y_normal, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt normal to the pilots seat');
+grid on;
+
+x_lateral = linspace(0,1249);
+y_lateral = zeros(size(x_lateral));
+
+% Lateral G force plot
+figure;
+plot(x_lateral, y_lateral, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt Laterally');
+grid on;
+
+x_BackandForth = linspace(0,1249);
+y_BackandForth = BackandForth_PieceWiseFunction(x_BackandForth, g, Section70_InitialVelocity, Section70_Distance);
+
+% Back and forth G force plot
+figure;
+plot(x_BackandForth, y_BackandForth, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt in the Back and forth Direction');
+grid on;
+
+%% Loop Plot
+x_loopNormal = linspace(65.4,379);
+y_loopNormal = Piecewise_function(x_loopNormal ,g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance);
+
+figure;
+plot(x_loopNormal, y_loopNormal, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt during the Loop in the Normal Direction');
+grid on;
+
+%% ZeroG Parabola
+ x_ZeroGNormal = linspace(434.56,534);
+ y_ZeroGNormal = Piecewise_function(x_ZeroGNormal ,g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance);
+
+figure;
+plot(x_ZeroGNormal, y_ZeroGNormal, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt during the ZeroG Parabola in the Normal Direction');
+grid on;
+
+%% Banked Turn
+ x_BankedNormal = linspace(709.56,1209);
+ y_BankedNormal = Piecewise_function(x_BankedNormal ,g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance);
+
+figure;
+plot(x_BankedNormal, y_BankedNormal, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt during the Banked turn in the Normal Direction');
+grid on;
+
+%% Braking section
+ x_BrakingNormal = linspace(1209.56,1249);
+ y_BrakingNormal = Piecewise_function(x_BrakingNormal ,g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance);
+
+figure;
+plot(x_BrakingNormal, y_BrakingNormal, 'b-', 'LineWidth', 2); % Blue line with thickness 2
+xlabel('Position on coaster (m)'); % Replace with actual label
+ylabel('G-force'); % Replace with actual label
+title('G-force felt during the Braking Section in the normal direction');
+grid on;
+
+%% Subplots in the Normal direction
+figure;
+
+% Subplot 1: Loop
+subplot(2,2,1);
+plot(x_loopNormal, y_loopNormal, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('Loop (Normal)');
+grid on;
+xlim([65.4,379]);
+ylim([-0.5, 3]);
+
+% Subplot 2: ZeroG Parabola
+subplot(2,2,2);
+plot(x_ZeroGNormal, y_ZeroGNormal, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('ZeroG Parabola (Normal)');
+grid on;
+xlim([434.56,534]);
+ylim([-0.5, 3]);
+
+% Subplot 3: Banked Turn
+subplot(2,2,3);
+plot(x_BankedNormal, y_BankedNormal, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('Banked Turn (Normal)');
+grid on;
+xlim([709.56,1209]);
+ylim([-0.5, 3]);
+
+% Subplot 4: Braking Section
+subplot(2,2,4);
+plot(x_BrakingNormal, y_BrakingNormal, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('Braking Section (Normal)');
+grid on;
+xlim([1209.56,1249]);
+ylim([-0.5, 3]);
+
+%% SubPlots in the lateral direction
+% Define x ranges for each section using "Lateral" naming
+x_loopLateral    = linspace(65.4, 379, 500);      % Loop section
+x_ZeroGLateral   = linspace(434.56, 534, 500);      % ZeroG Parabola section
+x_BankedLateral  = linspace(709.56, 1209, 500);     % Banked Turn section
+x_BrakingLateral = linspace(1209.56, 1249, 500);     % Braking Section
+
+% Create corresponding y values (all zeros)
+y_loopLateral    = zeros(size(x_loopLateral));
+y_ZeroGLateral   = zeros(size(x_ZeroGLateral));
+y_BankedLateral  = zeros(size(x_BankedLateral));
+y_BrakingLateral = zeros(size(x_BrakingLateral));
+
+% Create a figure with 2x2 subplots
+figure;
+
+% Subplot 1: Loop Section (Lateral)
+subplot(2,2,1);
+plot(x_loopLateral, y_loopLateral, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('Loop Section (Lateral)');
+grid on;
+ylim([-0.5, 3]);
+xlim([65.4, 379]);
+
+% Subplot 2: ZeroG Parabola Section (Lateral)
+subplot(2,2,2);
+plot(x_ZeroGLateral, y_ZeroGLateral, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('ZeroG Parabola Section (Lateral)');
+grid on;
+ylim([-0.5, 3]);
+xlim([434.56, 534]);
+
+% Subplot 3: Banked Turn Section (Lateral)
+subplot(2,2,3);
+plot(x_BankedLateral, y_BankedLateral, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('Banked Turn Section (Lateral)');
+grid on;
+ylim([-0.5, 3]);
+xlim([709.56, 1209]);
+
+% Subplot 4: Braking Section (Lateral)
+subplot(2,2,4);
+plot(x_BrakingLateral, y_BrakingLateral, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('Braking Section (Lateral)');
+grid on;
+ylim([-0.5, 3]);
+xlim([1209.56, 1249]);
+
+%% Subplots in the Back and Forth direction
+% Define x ranges for each section (Back and Forth)
+x_loopBackandForth    = linspace(65.4, 379, 500);
+x_ZeroGBackandForth   = linspace(434.56, 534, 500);
+x_BankedBackandForth  = linspace(709.56, 1209, 500);
+x_BrakingBackandForth = linspace(1209.56, 1249, 500);
+
+% Define corresponding y values:
+% For the first three sections, the lateral G-force is 0.
+y_loopBackandForth    = zeros(size(x_loopBackandForth));
+y_ZeroGBackandForth   = zeros(size(x_ZeroGBackandForth));
+y_BankedBackandForth  = zeros(size(x_BankedBackandForth));
+
+% For the braking section, compute using your piecewise function
+y_BrakingBackandForth = BackandForth_PieceWiseFunction(x_BrakingBackandForth, g, Section70_InitialVelocity, Section70_Distance);
+
+% Create a figure with 2x2 subplots
+figure;
+
+% Common Y-axis limits
+commonYLim = [-0.5, 3];
+
+% Subplot 1: Loop (Back and Forth)
+subplot(2,2,1);
+plot(x_loopBackandForth, y_loopBackandForth, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('Loop (Back and Forth)');
+grid on;
+xlim([65.4, 379]); % Section-specific X-axis limits
+ylim(commonYLim);
+
+% Subplot 2: ZeroG (Back and Forth)
+subplot(2,2,2);
+plot(x_ZeroGBackandForth, y_ZeroGBackandForth, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('ZeroG (Back and Forth)');
+grid on;
+xlim([434.56, 534]); % Section-specific X-axis limits (removing decimal)
+ylim(commonYLim);
+
+% Subplot 3: Banked (Back and Forth)
+subplot(2,2,3);
+plot(x_BankedBackandForth, y_BankedBackandForth, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('Banked (Back and Forth)');
+grid on;
+xlim([709.56, 1209]); % Section-specific X-axis limits (removing decimal)
+ylim(commonYLim);
+
+% Subplot 4: Braking (Back and Forth)
+subplot(2,2,4);
+plot(x_BrakingBackandForth, y_BrakingBackandForth, 'b-', 'LineWidth', 2);
+xlabel('Position on coaster (m)');
+ylabel('G-force');
+title('Braking (Back and Forth)');
+grid on;
+xlim([1209.56, 1249]); % Section-specific X-axis limits (removing decimal)
+ylim(commonYLim)
