@@ -1,1 +1,106 @@
+% Need to make the sizes of this index function and the arclengths the same
+function y = Piecewise_function(x,g, Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance)
 
+    % Resizing variables
+    [Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance] ...
+    = Resize_variables(x, ...
+    Section10_SlopeAngle, Section10_Velocity,Section15_TransitionRadius, ...
+    Section15_TransitionArcLength, Section17_Velocity, Section20_LoopRadius, ...
+    Section20_LoopArcLength, Section23_Velocity, Section25_TransitionRadius, ...
+    Section25_TransitionArcLength, Section30_Velocity, Section35_TransitionRadius, Section35_TransitionArcLength,...
+    Section35_Velocity, Section45_TransitionRadius, Section45_Arclength, Section50_SlopeAngle, ...
+    Section50_Velocity, Section55_TransitionRadius, Section55_Arclength, Section55_Velocity, ...
+    Section60_Radius, Section70_InitialVelocity, Section70_Distance);
+
+
+    % Preallocate output array
+    y = zeros(size(x)); 
+
+    % Define conditions a <= x < b
+    idx1  = (0       <= x) & (x < 35.4);    % Constant Slope (35.4 m)
+    idx2  = (35.4    <= x) & (x < 60.4);    % Transition (25 m)
+    idx3  = (60.4    <= x) & (x < 65.4);    % Flat track (5 m)
+    idx4  = (65.4    <= x) & (x < 379.56);  % Loop (314.16 m)
+    idx5  = (379.56  <= x) & (x < 384.56);  % Flat track (5 m)
+    idx6  = (384.56  <= x) & (x < 434.56);  % Transition (50 m)
+    idx7  = (434.56  <= x) & (x < 534.56);  % Zero G parabola (100 m)
+    idx8  = (534.56  <= x) & (x < 594.56);  % Transition (60 m)
+    idx9  = (594.56  <= x) & (x < 599.56);  % Flat track (5 m)
+    idx10 = (599.56  <= x) & (x < 624.56);  % Transition (25 m)
+    idx11 = (624.56  <= x) & (x < 674.56);  % Constant Slope (50 m)
+    idx12 = (674.56  <= x) & (x < 709.56);  % Transition (35 m)
+    idx13 = (709.56  <= x) & (x < 1209.56); % Banked Turn (500 m)
+    idx14 = (1209.56  <= x) & (x < 1249);   % Braking Section (239.44 m)
+    idx15 = (x >= 1249); % End
+
+
+    % Assign values based on conditions
+    % Section 1: Constant Slope (using scalar Section10_SlopeAngle)
+    y(idx1)  = cos(Section10_SlopeAngle(idx1));
+
+    % Section 2: Transition from constant slope to flat
+     y(idx2)  = (Section10_Velocity(idx2).^2 ./ (g .* Section15_TransitionRadius(idx2))) ...
+    - sin(Section15_Arclength(idx2) ./ Section15_TransitionRadius(idx2));
+
+    % Section 3: Flat track
+    y(idx3)  = ones(size(x(idx3)));
+
+    % Section 4: Loop
+    y(idx4)  = (Section17_Velocity(idx4).^2 ./ (g .* Section20_LoopRadius(idx4))) ...
+                - sin(Section20_LoopArcLength(idx4) ./ Section20_LoopRadius(idx4));
+
+    % Section 5: Flat track
+    y(idx5)  = ones(size(x(idx5)));
+
+    % Section 6: Transition from flat track to Zero-G parabola
+    y(idx6)  = (Section23_Velocity(idx6).^2 ./ (g .* Section25_TransitionRadius(idx6))) ...
+                - sin(Section25_TransitionArcLength(idx6) ./ Section25_TransitionRadius(idx6));
+
+    % Section 7: Zero G parabola
+    y(idx7)  = zeros(size(x(idx7)));
+
+    % Section 8: Transition from Zero-G parabola to flat
+    y(idx8)  = (Section30_Velocity(idx8).^2 ./ (g .* Section35_TransitionRadius(idx8))) ...
+                - sin(Section35_TransitionArcLength(idx8) ./ Section35_TransitionRadius(idx8));
+
+    % Section 9: Flat track
+    y(idx9)  = ones(size(x(idx9)));
+
+    % Section 10: Transition from flat to slope
+    y(idx10) = (Section35_Velocity(idx10).^2 ./ (g .* Section45_TransitionRadius(idx10))) ...
+                - sin(Section45_Arclength(idx10) ./ Section45_TransitionRadius(idx10));
+
+    % Section 11: Constant Slope (using scalar Section50_SlopeAngle)
+    y(idx11) = cos(Section50_SlopeAngle(idx11));
+
+    % Section 12: Transition (35 m) 
+    y(idx12) = (Section50_Velocity(idx12).^2 ./ (g .* Section55_TransitionRadius(idx12))) - ...
+        sin(Section55_Arclength(idx12) ./ Section55_TransitionRadius(idx12)); 
+
+    % Section 13: Banked Turn (300 m) 
+    y(idx13) = abs(1 ./ cos(atan2d(Section55_Velocity(idx13).^2, g .* Section60_Radius(idx13)))); 
+
+    % Section 14: Braking Section (39.44 m) 
+    % Braking section only experincens Gforces in the back and forth
+    % direction, and has 1 G in the normal direction
+    % y(idx14) = abs((max((-(Section70_InitialVelocity(idx14).^2) ./ (2 .* Section70_Distance(idx14))), -4*g)) ./ g); 
+    y(idx14) = ones(size(x(idx14)));
+
+    % Section 15: End
+    y(idx15) = ones(size(x(idx15)));
+
+    
+
+end
